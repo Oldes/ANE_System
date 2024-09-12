@@ -16,7 +16,7 @@ import com.adobe.fre.FREExtension;
 public class SystemExtension implements FREExtension
 {
 	public static final String TAG = "ANE_System";
-	public static final String VERSION = "1.0.0";
+	public static final String VERSION = "1.2.0";
 	public static final int VERBOSE = 1;
 
 	public static SystemExtensionContext extensionContext;

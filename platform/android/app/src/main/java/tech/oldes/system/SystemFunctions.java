@@ -9,21 +9,25 @@
 package tech.oldes.system;
 
 import static android.provider.Settings.*;
+import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
 
 import com.adobe.fre.FREContext;
 import com.adobe.fre.FREFunction;
 import com.adobe.fre.FREObject;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -71,7 +75,18 @@ public class SystemFunctions
 	static public class Init implements FREFunction {
 		@Override
 		public FREObject call(FREContext context, FREObject[] args) {
-			SystemExtension.appContext = context.getActivity().getApplicationContext();
+			try{
+				Activity activity = context.getActivity();
+				SystemExtension.appContext = activity.getApplicationContext();
+				if (Build.VERSION.SDK_INT >= 28) {
+					Window window = activity.getWindow();
+					WindowManager.LayoutParams params = window.getAttributes();
+					params.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+					window.setAttributes(params);
+				}
+			} catch (Exception e) {
+				SystemExtension.handleException(e);
+			}
 			return null;
 		}
 	}
@@ -139,9 +154,9 @@ public class SystemFunctions
 			try{
 				String id = args[0].getAsString();
 				String str = getResourceString(id);
-		    	if(SystemExtension.VERBOSE > 0) Log.d(SystemExtension.TAG, "GetResourceString: '"+ id +"' = "+str);
-		    	return FREObject.newObject(str);
-		    	
+				if(SystemExtension.VERBOSE > 0) Log.d(SystemExtension.TAG, "GetResourceString: '"+ id +"' = "+str);
+				return FREObject.newObject(str);
+				
 			} catch (Exception e) {
 				SystemExtension.handleException(e);
 			}
@@ -172,9 +187,9 @@ public class SystemFunctions
 		public FREObject call(FREContext ctx, FREObject[] args) {
 			try{
 				String message = args[0].getAsString();
-		    	int duration = args[1].getAsBool() ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT;
-		    	if(SystemExtension.VERBOSE > 0) Log.d(SystemExtension.TAG, "showToast: '"+ message +"', duration: "+ duration);
-		    	Toast.makeText(ctx.getActivity(), message, duration).show();
+				int duration = args[1].getAsBool() ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT;
+				if(SystemExtension.VERBOSE > 0) Log.d(SystemExtension.TAG, "showToast: '"+ message +"', duration: "+ duration);
+				Toast.makeText(ctx.getActivity(), message, duration).show();
 			} catch (Exception e) {
 				SystemExtension.handleException(e);
 			}
@@ -225,24 +240,24 @@ public class SystemFunctions
 					})
 					.setNegativeButton(getResourceString(NO), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog,int id) {
-						    SystemExtension.extensionContext.dispatchStatusEventAsync("onAlertDialog", NO);
+							SystemExtension.extensionContext.dispatchStatusEventAsync("onAlertDialog", NO);
 						}
 					})
 					.setPositiveButton(getResourceString(YES), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog,int id) {
-						    SystemExtension.extensionContext.dispatchStatusEventAsync("onAlertDialog", YES);
+							SystemExtension.extensionContext.dispatchStatusEventAsync("onAlertDialog", YES);
 						}
 					})
 					.setOnCancelListener(new DialogInterface.OnCancelListener() {         
-					    @Override
-					    public void onCancel(DialogInterface dialog) {
-					    	SystemExtension.extensionContext.dispatchStatusEventAsync("onAlertDialog", "cancel");
-					    }
+						@Override
+						public void onCancel(DialogInterface dialog) {
+							SystemExtension.extensionContext.dispatchStatusEventAsync("onAlertDialog", "cancel");
+						}
 					});
 				
 				displayDialog(alertDialogBuilder);
 				
-			    return FREObject.newObject(true);
+				return FREObject.newObject(true);
 			}
 			catch (Exception e) {
 				Log.e(SystemExtension.TAG, "ShowAlertDialog failed");
@@ -286,7 +301,7 @@ public class SystemFunctions
 					.setMessage(message)
 					.setNegativeButton(getResourceString(NO), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog,int id) {
-						    //SystemExtension.extensionContext.dispatchStatusEventAsync("onAlertDialog", NO);
+							//SystemExtension.extensionContext.dispatchStatusEventAsync("onAlertDialog", NO);
 						}
 					})
 					.setPositiveButton(getResourceString(YES), new DialogInterface.OnClickListener() {
@@ -297,7 +312,7 @@ public class SystemFunctions
 				
 				displayDialog(alertDialogBuilder);
 				
-			    return FREObject.newObject(true);
+				return FREObject.newObject(true);
 			}
 			catch (Exception e) {
 				SystemExtension.handleException(e);
@@ -311,7 +326,7 @@ public class SystemFunctions
 		public FREObject call(FREContext ctx, FREObject[] args) {
 			try{
 				navigateToURL(args[0].getAsString());
-		    	return FREObject.newObject(true);
+				return FREObject.newObject(true);
 			} catch (Exception e) {
 				SystemExtension.handleException(e);
 			}

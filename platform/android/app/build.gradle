@@ -6,9 +6,17 @@ android {
     namespace 'tech.oldes.system'
     compileSdk 34
 
+    lintOptions {
+        abortOnError true
+        warningsAsErrors false
+
+        // Don't fail when new versions of dependencies are available. Allows reproducible builds
+        disable("NewerVersionAvailable", "GradleDependency")
+    }
+
     defaultConfig {
         minSdk 23
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
     }
